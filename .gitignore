@@ -1,0 +1,71 @@
+# ── Dependencies ──────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# ── Next.js ───────────────────────────────────────────────
+src/.next/
+src/out/
+src/build/
+
+# ── .NET / Aspire ─────────────────────────────────────────
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+AspireAppHost/Properties/launchSettings.local.json
+
+# ── Environment variables ─────────────────────────────────
+.env
+.env.*
+!.env.local.example
+
+# ── OS files ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE / Editor ──────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── Debug / Logs ──────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ── Testing / Coverage ───────────────────────────────────
+coverage/
+.nyc_output/
+
+# ── TypeScript ────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Docker / Azurite local data ───────────────────────────
+docker-compose.override.yml
+__azurite_*
+__blobstorage__/
+__queuestorage__/
+__tablestorage__/
+
+# ── Secrets / Certs ───────────────────────────────────────
+*.pem
+*.pfx
+*.key
+
+# ── Misc ──────────────────────────────────────────────────
+.vercel
+.turbo
