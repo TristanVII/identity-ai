@@ -832,7 +832,7 @@ identity-ai/
 │   ├── AppHost.csproj
 │   └── Program.cs                   # Aspire AppHost — wires up all services
 ├── frontend/                        # Next.js application
-│   ├── src/
+│   ├── front-end/
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
 │   │   ├── studio/
@@ -899,7 +899,7 @@ var blobs = builder.AddAzureStorage("storage")
     .AddBlobs("blobs");
 
 // Next.js frontend (+ API routes)
-var frontend = builder.AddJavaScriptApp("frontend", "../src")
+var frontend = builder.AddJavaScriptApp("frontend", "../front-end")
     .WithHttpEndpoint(port: 3000, env: "PORT")
     .WithReference(db)       // injects DATABASE_URL
     .WithReference(blobs);   // injects AZURE_STORAGE_CONNECTION_STRING

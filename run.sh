@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SRC_DIR="$ROOT_DIR/src"
+SRC_DIR="$ROOT_DIR/front-end"
 APPHOST_DIR="$ROOT_DIR/AspireAppHost"
 
 # ── Pre-flight checks ────────────────────────────────────────────
@@ -44,7 +44,7 @@ npm install --silent
 # ── Env file (for standalone use only — Aspire injects at runtime) ──
 if [ ! -f "$SRC_DIR/.env.local" ]; then
   echo "⚠️   Creating .env.local from template."
-  echo "    Add your GOOGLE_AI_API_KEY and KLING_API_KEY to src/.env.local"
+  echo "    Add your GOOGLE_AI_API_KEY and KLING_API_KEY to front-end/.env.local"
   cp "$SRC_DIR/.env.local.example" "$SRC_DIR/.env.local" 2>/dev/null || true
 fi
 
