@@ -45,7 +45,8 @@ export async function uploadBlob(
   await blockBlobClient.uploadData(data, {
     blobHTTPHeaders: { blobContentType: contentType },
   })
-  return blockBlobClient.url
+  // Return a proxy URL that works from the browser
+  return `/api/blobs/${container}/${blobName}`
 }
 
 export async function downloadBlob(

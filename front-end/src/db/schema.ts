@@ -60,3 +60,24 @@ export const videoJobs = pgTable(
     index("idx_video_jobs_status").on(table.status),
   ]
 )
+
+export const aiLogs = pgTable(
+  "ai_logs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    caller: text("caller").notNull(),
+    user_id: text("user_id"),
+    action: text("action").notNull(),
+    model: text("model").notNull(),
+    persona_id: uuid("persona_id"),
+    prompt: text("prompt"),
+    parameters: jsonb("parameters").default({}),
+    created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("idx_ai_logs_caller").on(table.caller),
+    index("idx_ai_logs_action").on(table.action),
+    index("idx_ai_logs_persona").on(table.persona_id),
+    index("idx_ai_logs_created").on(table.created_at),
+  ]
+)

@@ -1,4 +1,4 @@
-import { pool } from "@/lib/azure/db"
+import { pool } from "./src/lib/azure/db"
 
 export async function register() {
   // Only run on the Node.js server runtime, not Edge

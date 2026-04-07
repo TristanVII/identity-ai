@@ -1,0 +1,9 @@
+node_modules
+.next
+.env*
+!.env.local.example
+e2e
+test-results
+playwright.config.ts
+playwright-report
+*.md

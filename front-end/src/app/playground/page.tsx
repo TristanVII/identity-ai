@@ -1,28 +1,45 @@
+"use client"
+
 import { Suspense } from "react"
+import { Spinner, makeStyles, tokens } from "@fluentui/react-components"
 import { PersonaSelector } from "@/components/playground/PersonaSelector"
-import { ChatInterface } from "@/components/playground/ChatInterface"
+import { EditorWorkspace } from "@/components/playground/EditorWorkspace"
+
+const useStyles = makeStyles({
+  root: {
+    display: "flex",
+    height: "calc(100dvh - 60px)",
+    backgroundColor: tokens.colorNeutralBackground3,
+  },
+  sidebar: {
+    width: "220px",
+    minWidth: "220px",
+    borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
+    overflowY: "auto",
+    flexShrink: 0,
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
+  loading: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: tokens.spacingVerticalXXL,
+  },
+})
 
 export default function PlaygroundPage() {
+  const styles = useStyles()
+
   return (
-    <div style={{ display: "flex", height: "calc(100dvh - 60px)" }}>
-      <aside
-        style={{
-          width: 260,
-          borderRight: "1px solid var(--border)",
-          overflowY: "auto",
-          flexShrink: 0,
-          background: "var(--bg-alt)",
-        }}
-      >
-        <Suspense fallback={<div style={{ padding: 16, color: "var(--text-muted)", fontSize: "var(--text-body-sm)" }}>Loading…</div>}>
+    <div className={styles.root}>
+      <aside className={styles.sidebar}>
+        <Suspense fallback={<div className={styles.loading}><Spinner size="small" /></div>}>
           <PersonaSelector />
         </Suspense>
       </aside>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <Suspense fallback={<div style={{ padding: 24, color: "var(--text-muted)" }}>Loading…</div>}>
-          <ChatInterface />
-        </Suspense>
-      </div>
+      <Suspense fallback={<div className={styles.loading} style={{ flex: 1 }}><Spinner /></div>}>
+        <EditorWorkspace />
+      </Suspense>
     </div>
   )
 }

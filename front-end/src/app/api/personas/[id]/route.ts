@@ -11,16 +11,7 @@ export async function GET(
   try {
     const { id } = await params
     const [persona] = await db
-      .select({
-        id: personas.id,
-        name: personas.name,
-        source_image_url: personas.source_image_url,
-        nine_grid_url: personas.nine_grid_url,
-        trait_inputs: personas.trait_inputs,
-        status: personas.status,
-        created_at: personas.created_at,
-        updated_at: personas.updated_at,
-      })
+      .select()
       .from(personas)
       .where(eq(personas.id, id))
 
@@ -49,6 +40,12 @@ export async function PATCH(
     }
     if (body.trait_inputs !== undefined) {
       updates.trait_inputs = body.trait_inputs
+    }
+    if (body.hidden_metadata !== undefined) {
+      updates.hidden_metadata = body.hidden_metadata
+    }
+    if (body.status !== undefined) {
+      updates.status = body.status
     }
 
     if (Object.keys(updates).length === 0) {

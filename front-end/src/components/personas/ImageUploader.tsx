@@ -1,13 +1,41 @@
 "use client"
 
 import { useCallback, useState } from "react"
+import { Caption1, Spinner, makeStyles, tokens } from "@fluentui/react-components"
+import { ArrowUpload24Regular } from "@fluentui/react-icons"
 
 interface ImageUploaderProps {
   personaId: string
   onAnalyzed: (traitInputs: Record<string, unknown>, sourceImageUrl: string) => void
 }
 
+const useStyles = makeStyles({
+  dropzone: {
+    border: `2px dashed ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusLarge,
+    padding: tokens.spacingVerticalXXL,
+    textAlign: "center",
+    cursor: "pointer",
+    transitionProperty: "border-color, background-color",
+    transitionDuration: tokens.durationNormal,
+  },
+  preview: {
+    maxHeight: "200px",
+    margin: "0 auto",
+    borderRadius: tokens.borderRadiusLarge,
+    display: "block",
+  },
+  uploading: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: tokens.spacingHorizontalS,
+    marginTop: tokens.spacingVerticalM,
+  },
+})
+
 export function ImageUploader({ personaId, onAnalyzed }: ImageUploaderProps) {
+  const styles = useStyles()
   const [isUploading, setIsUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
 
@@ -20,12 +48,17 @@ export function ImageUploader({ personaId, onAnalyzed }: ImageUploaderProps) {
       formData.append("persona_id", personaId)
       try {
         const res = await fetch("/api/analyze", { method: "POST", body: formData })
-        if (!res.ok) throw new Error("Analysis failed")
+        if (!res.ok) {
+          const body = await res.json().catch(() => null)
+          const msg = body?.error?.message ?? `Server error (${res.status})`
+          throw new Error(msg)
+        }
         const data = await res.json()
-        onAnalyzed(data.trait_inputs, data.source_image_url)
+        onAnalyzed(data.blueprint, data.source_image_url)
       } catch (err) {
-        console.error(err)
-        alert("Failed to analyze image. Please try again.")
+        const message = err instanceof Error ? err.message : "Unknown error"
+        console.error("Image analysis failed:", message)
+        alert(`Analysis failed: ${message}`)
       } finally {
         setIsUploading(false)
       }
@@ -35,25 +68,15 @@ export function ImageUploader({ personaId, onAnalyzed }: ImageUploaderProps) {
 
   return (
     <div>
-      <label style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-muted)", display: "block", marginBottom: 12 }}>
-        Upload Reference Face
-      </label>
       <div
-        style={{
-          border: "2px dashed var(--border)",
-          borderRadius: "var(--radius-xl)",
-          padding: 32,
-          textAlign: "center",
-          cursor: "pointer",
-          transition: "border-color 0.2s ease, background 0.2s ease",
-        }}
+        className={styles.dropzone}
         onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = "var(--accent)"
-          e.currentTarget.style.background = "rgba(139,142,255,0.03)"
+          e.currentTarget.style.borderColor = tokens.colorBrandStroke1
+          e.currentTarget.style.backgroundColor = tokens.colorNeutralBackground1Hover
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = "var(--border)"
-          e.currentTarget.style.background = "transparent"
+          e.currentTarget.style.borderColor = tokens.colorNeutralStroke2
+          e.currentTarget.style.backgroundColor = "transparent"
         }}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
@@ -64,16 +87,16 @@ export function ImageUploader({ personaId, onAnalyzed }: ImageUploaderProps) {
         onClick={() => document.getElementById("face-upload")?.click()}
       >
         {preview ? (
-          <img src={preview} alt="Preview" style={{ maxHeight: 200, margin: "0 auto", borderRadius: "var(--radius-lg)" }} />
+          <img src={preview} alt="Preview" className={styles.preview} />
         ) : (
-          <div>
-            <p style={{ fontSize: 32, marginBottom: 8 }}>📸</p>
-            <p style={{ color: "var(--text-muted)", fontSize: "var(--text-body-sm)" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <ArrowUpload24Regular style={{ color: tokens.colorNeutralForeground3 }} />
+            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
               Drag & drop a face image, or click to browse
-            </p>
-            <p style={{ color: "var(--text-subtle)", fontSize: "var(--text-micro)", marginTop: 4 }}>
+            </Caption1>
+            <Caption1 style={{ color: tokens.colorNeutralForeground4, fontSize: tokens.fontSizeBase100 }}>
               JPEG or PNG, max 10 MB
-            </p>
+            </Caption1>
           </div>
         )}
         <input
@@ -88,9 +111,12 @@ export function ImageUploader({ personaId, onAnalyzed }: ImageUploaderProps) {
         />
       </div>
       {isUploading && (
-        <p className="animate-pulse-subtle" style={{ fontSize: "var(--text-body-sm)", color: "var(--accent)", marginTop: 12, textAlign: "center" }}>
-          Analyzing face…
-        </p>
+        <div className={styles.uploading}>
+          <Spinner size="tiny" />
+          <Caption1 style={{ color: tokens.colorBrandForeground1 }}>
+            Analyzing face...
+          </Caption1>
+        </div>
       )}
     </div>
   )

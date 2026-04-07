@@ -2,35 +2,67 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+The app is orchestrated by .NET Aspire. From the repo root:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+./run.sh
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This starts the Aspire AppHost which launches PostgreSQL, Azurite (blob storage), and the Next.js frontend in Docker containers.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The Aspire dashboard is available at the URL printed on startup (usually `https://localhost:17275`).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Debugging
 
-## Learn More
+### Connecting to PostgreSQL
 
-To learn more about Next.js, take a look at the following resources:
+Aspire assigns random host ports on each restart. To find the current port and credentials:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# 1. Find the postgres container name and mapped port
+docker ps --format '{{.Names}} {{.Ports}}' | grep db
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Example output: db-5929e0ae 127.0.0.1:57998->5432/tcp
+#                                        ^^^^^ use this port
 
-## Deploy on Vercel
+# 2. Get the auto-generated password
+docker exec <container-name> env | grep POSTGRES_PASSWORD
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# 3. Connect
+psql -h localhost -p <port> -U postgres -d personasync
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Or as a one-liner
+PGPASSWORD='<password>' psql -h localhost -p <port> -U postgres -d personasync
+```
+
+### Connecting to Azurite (Blob Storage)
+
+Azurite runs as an emulator with the well-known development credentials:
+
+```bash
+# Find the mapped port
+docker ps --format '{{.Names}} {{.Ports}}' | grep storage
+
+# Use Azure Storage Explorer or az CLI with the default dev connection string:
+# DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:<port>/devstoreaccount1
+```
+
+### Viewing Frontend Logs
+
+```bash
+docker logs -f <frontend-container-name>
+```
+
+### Data Persistence
+
+Both PostgreSQL and Azurite use named Docker volumes (`personasync-pgdata`, `personasync-azurite`) with persistent lifetimes, so data survives container and Aspire restarts.
+
+To wipe data and start fresh:
+
+```bash
+docker volume rm personasync-pgdata personasync-azurite
+```
+
+### Hot Reload
+
+The frontend source (`src/` and `public/`) is bind-mounted into the container. Changes to files in `front-end/src/` are picked up automatically by Next.js dev server inside Docker.
